@@ -1,0 +1,9 @@
+spring:
+  profiles:
+    name: dev
+  h2:
+    console:
+      enabled: true  
+  
+server:
+  port: 8084

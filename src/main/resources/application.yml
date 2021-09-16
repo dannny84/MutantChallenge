@@ -1,0 +1,32 @@
+server:
+  port: 8084
+  servlet:  
+    context-path: /challenge/v1.0/   
+
+management:
+  endpoints:
+    jmx:
+      exposure:
+        include: "health"
+        
+
+swagger:
+  version: "v1.0"
+  title: "Challenge MercadoLibre"
+  base-package: "com.mercadolibre.challenge.controller"
+    
+spring:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+
+logging:
+  level:
+    root: INFO
+      
+
+
