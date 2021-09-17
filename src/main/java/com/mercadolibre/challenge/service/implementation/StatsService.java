@@ -40,7 +40,7 @@ public class StatsService implements IStatsService{
 		stats.setCountMutantDna(totalMutants);
 		
 		if(totalHumans > 0) {
-			stats.setRatio(totalMutants.doubleValue()/totalHumans.doubleValue());
+			stats.setRatio(totalMutants.floatValue()/totalHumans.floatValue());
 		}else {
 			stats.setRatio(0);
 		}

@@ -60,9 +60,11 @@ public class MutantController {
 						new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.FORBIDDEN);
 			}else {
 				response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+				logger.error("Error en el patron ADN");
 			}
 		}catch(IllegalArgumentException e) {
 			response =  new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			logger.error("Error de invocacion, " + e.getMessage(), e);
 		}
 		
 		return response;

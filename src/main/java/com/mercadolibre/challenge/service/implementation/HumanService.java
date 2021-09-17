@@ -58,9 +58,6 @@ public class HumanService implements IHumanService {
 		}else {			
 			Character[][] matrix = getMatrix(human.getDna());
 			
-			//TODO OJO!!! BORRAR
-			imprimirMatriz(matrix);
-			
 			isMutant = validateADNMutant(matrix, projectionInit, countFound);
 			
 			repository.save(new HumanEntity(human.getDna().toString(), isMutant));
@@ -101,6 +98,12 @@ public class HumanService implements IHumanService {
 		}
 	}
 	
+	/**
+	 * Obtiene la matriz desde la lista de ADN ingresada
+	 * 
+	 * @param input
+	 * @return Matriz
+	 */
 	private Character[][] getMatrix(List<String> input) {
 		int col = input.get(0).length();
 		int row = input.size();
@@ -121,6 +124,14 @@ public class HumanService implements IHumanService {
 		return matrix;
 	}
 
+	/**
+	 * valida el ADN de la persona para determinar si es un Mutante o no
+	 * 
+	 * @param matrix
+	 * @param projectionNumber
+	 * @param countADNRepeated
+	 * @return true si es Mutante y false en caso contrario
+	 */
 	private boolean validateADNMutant(Character[][] matrix, int projectionNumber, long countADNRepeated) {
 		if (countADNRepeated >= MIN_REPEATED_MUTANT) {
 			return true;
@@ -134,6 +145,13 @@ public class HumanService implements IHumanService {
 		}
 	}
 	
+	/**
+	 * Obtiene la data en diferentes direcciones
+	 * 
+	 * @param matrix
+	 * @param order
+	 * @return Lista de ADN
+	 */
 	private List<String> getData(Character[][] matrix, final int order) {
 		List<String> data;
 		
@@ -143,7 +161,6 @@ public class HumanService implements IHumanService {
 			data = IntStream.range(0, matrix.length).mapToObj(i -> 
 						IntStream.range(0, matrix[0].length)
 								 .mapToObj(j -> order == 1 ? matrix[i][j] : matrix[j][i])
-								 .peek(System.out::println)
 								 .map(String::valueOf)
 								 .collect(Collectors.joining())
 					).collect(Collectors.toList());
@@ -158,6 +175,13 @@ public class HumanService implements IHumanService {
 		return data;
 	}
 	
+	/**
+	 * Obtiene los elementos de la diagonal de una matriz
+	 * pasada por parametro 
+	 *  
+	 * @param matrix
+	 * @return
+	 */
 	private List<String> getDataDiagonal(Character [][] matrix) {
 	    int row = 0;
 	    int column;
@@ -174,44 +198,28 @@ public class HumanService implements IHumanService {
 	    
 	    do {
 	    	sb.append(matrix[row][column]);
-	    	
-	      if((seq == 0 && column == matrix.length - 1) || (seq == 1 && row == matrix.length - 1)) {
-	    	  System.out.println(sb.toString());
-	    	  data.add(sb.toString());
-	    	  sb = new StringBuilder();
-	      }
-	      
-	      if (column == matrix.length - 1 && lastColumn > 0) {
-	        row = 0;
-	        column = lastColumn - 1;
-	        lastColumn = column;
-	      } else if (row == matrix.length - 1 || column == matrix.length - 1) {
-	        row = lastRow + 1;
-	        column = 0;
-	        lastRow = row;
-	        seq = 1;
-	      } else {
-	        row++;
-	        column++;
-	      }
+
+			if ((seq == 0 && column == matrix.length - 1) || (seq == 1 && row == matrix.length - 1)) {
+				data.add(sb.toString());
+				sb = new StringBuilder();
+			}
+
+			if (column == matrix.length - 1 && lastColumn > 0) {
+				row = 0;
+				column = lastColumn - 1;
+				lastColumn = column;
+			} else if (row == matrix.length - 1 || column == matrix.length - 1) {
+				row = lastRow + 1;
+				column = 0;
+				lastRow = row;
+				seq = 1;
+			} else {
+				row++;
+				column++;
+			}
 	    } while ((row != matrix.length));
 	    
 	    return data;
 	}
-	
-	
-	
-	//TODO Borrar
-	private static void imprimirMatriz(Character[][] matriz) {
-		for (int j2 = 0; j2 < matriz.length; j2++) {
-			System.out.print("[");
-			for (int k = 0; k < matriz.length; k++) {
-				System.out.print(matriz[j2][k]+" ");
-			}
-			System.out.print("]");
-		    System.out.println("");
-		}
-	}
-	
-	
+
 }

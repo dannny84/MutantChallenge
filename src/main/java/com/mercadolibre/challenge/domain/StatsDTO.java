@@ -34,5 +34,5 @@ public class StatsDTO implements Serializable{
 	private long countHumanDna;
 	
 	@JsonProperty("ratio")
-	private double ratio;
+	private float ratio;
 }
