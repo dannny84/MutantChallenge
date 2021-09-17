@@ -28,5 +28,8 @@ logging:
   level:
     root: INFO
       
-
+security:
+  tokens:
+    max: 100
+    duration: 1
 

@@ -1,7 +1,11 @@
 package com.mercadolibre.challenge.controller;
 
+import java.time.Duration;
+
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +19,10 @@ import com.mercadolibre.challenge.service.IHumanService;
 import com.mercadolibre.challenge.util.ApiConstant;
 import com.mercadolibre.challenge.util.PatternUtil;
 
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.Bucket4j;
+import io.github.bucket4j.Refill;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -33,11 +41,21 @@ public class MutantController {
 
 	Logger logger = Logger.getLogger(MutantController.class);
 	
+	private final Bucket bucket;
+
 	/**
 	 * Servicio
 	 */
 	@Autowired
 	private IHumanService service;
+	
+	@Autowired
+	public MutantController(@Value("${security.tokens.max}") int tokensAllowed, @Value("${security.tokens.duration}") int tokensDuration) {
+        Bandwidth limit = Bandwidth.classic(tokensAllowed, Refill.greedy(tokensAllowed, Duration.ofSeconds(tokensDuration)));
+        this.bucket = Bucket4j.builder()
+            .addLimit(limit)
+            .build();
+    }
 	
 	/**
 	 * Detecta si un humano es mutante segun la secuencia de ADN recibida
@@ -55,12 +73,17 @@ public class MutantController {
 		
 		try {
 			logger.info("Detecta si un humano es mutante segun la secuencia de ADN");
-			if(PatternUtil.validatePattern(humanDTO.getDna(), ApiConstant.ADN_PATTERN_PERSON)) {
-				response = service.isMutant(humanDTO) ? 
-						new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			
+			if (bucket.tryConsume(1)) {
+				if(PatternUtil.validatePattern(humanDTO.getDna(), ApiConstant.ADN_PATTERN_PERSON)) {
+					response = service.isMutant(humanDTO) ? 
+							new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.FORBIDDEN);
+				}else {
+					response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+					logger.error("Error en el patron ADN");
+				}
 			}else {
-				response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-				logger.error("Error en el patron ADN");
+				response = ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
 			}
 		}catch(IllegalArgumentException e) {
 			response =  new ResponseEntity<>(HttpStatus.BAD_REQUEST);
