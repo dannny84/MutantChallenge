@@ -77,21 +77,25 @@ public class MutantController {
 							@ApiResponse(code = 403, message = "Forbidden") })
 	public @ResponseBody ResponseEntity<Void> isMutant(@ApiParam(value="Este es el adn") @RequestBody(required = true) HumanDTO humanDTO) {
 		ResponseEntity<Void> response;
-
-		logger.info("Detecta si un humano es mutante segun la secuencia de ADN");
 		
-		if (bucket.tryConsume(1)) {
-			if(humanDTO != null && PatternUtil.validatePattern(humanDTO.getDna(), ApiConstant.ADN_PATTERN_PERSON)) {
-				response = service.isMutant(humanDTO) ? 
-						new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		try {
+			logger.info("Detecta si un humano es mutante segun la secuencia de ADN");
+			
+			if (bucket.tryConsume(1)) {
+				if(humanDTO != null && PatternUtil.validatePattern(humanDTO.getDna(), ApiConstant.ADN_PATTERN_PERSON)) {
+					response = service.isMutant(humanDTO) ? 
+							new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.FORBIDDEN);
+				}else {
+					response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+					logger.error("Error en el patron ADN");
+				}
 			}else {
-				response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-				logger.error("Error en el patron ADN");
+				response = ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
 			}
-		}else {
-			response = ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+		}catch(IllegalArgumentException e) {
+			response =  new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			logger.error("Error de invocacion, " + e.getMessage(), e);
 		}
-		
 		return response;
 	}
 }

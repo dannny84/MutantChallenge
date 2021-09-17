@@ -8,7 +8,6 @@ management:
     jmx:
       exposure:
         include: "health"
-        
 
 swagger:
   version: "v1.0"
