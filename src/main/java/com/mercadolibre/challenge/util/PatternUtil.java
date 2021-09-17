@@ -3,8 +3,6 @@
  */
 package com.mercadolibre.challenge.util;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -17,7 +15,6 @@ import java.util.regex.Pattern;
 public class PatternUtil {
 
 	private PatternUtil() {
-		
 	}
 	
 	public static boolean validatePattern(List<String> rowData, String pattern) {

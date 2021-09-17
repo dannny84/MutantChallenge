@@ -5,7 +5,6 @@ import java.time.Duration;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,6 +40,9 @@ public class MutantController {
 
 	Logger logger = Logger.getLogger(MutantController.class);
 	
+	/**
+	 * Controla la cantidad de peticiones al servicio
+	 */
 	private final Bucket bucket;
 
 	/**
@@ -75,24 +77,19 @@ public class MutantController {
 							@ApiResponse(code = 403, message = "Forbidden") })
 	public @ResponseBody ResponseEntity<Void> isMutant(@ApiParam(value="Este es el adn") @RequestBody(required = true) HumanDTO humanDTO) {
 		ResponseEntity<Void> response;
+
+		logger.info("Detecta si un humano es mutante segun la secuencia de ADN");
 		
-		try {
-			logger.info("Detecta si un humano es mutante segun la secuencia de ADN");
-			
-			if (bucket.tryConsume(1)) {
-				if(PatternUtil.validatePattern(humanDTO.getDna(), ApiConstant.ADN_PATTERN_PERSON)) {
-					response = service.isMutant(humanDTO) ? 
-							new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.FORBIDDEN);
-				}else {
-					response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-					logger.error("Error en el patron ADN");
-				}
+		if (bucket.tryConsume(1)) {
+			if(humanDTO != null && PatternUtil.validatePattern(humanDTO.getDna(), ApiConstant.ADN_PATTERN_PERSON)) {
+				response = service.isMutant(humanDTO) ? 
+						new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.FORBIDDEN);
 			}else {
-				response = ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+				response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+				logger.error("Error en el patron ADN");
 			}
-		}catch(IllegalArgumentException e) {
-			response =  new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-			logger.error("Error de invocacion, " + e.getMessage(), e);
+		}else {
+			response = ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
 		}
 		
 		return response;

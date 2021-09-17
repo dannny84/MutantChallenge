@@ -5,8 +5,6 @@ package com.mercadolibre.challenge.controller;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
@@ -40,7 +38,7 @@ public class MutantControllerTest {
 	 * Controlador principal 
 	 */
 	@InjectMocks
-	private MutantController controller;
+	private MutantController controller = new MutantController(1, 1);
 	
 	/**
 	 * Service
@@ -48,10 +46,11 @@ public class MutantControllerTest {
 	@Mock
 	private IHumanService service;
 	
-	
+	/**
+	 * Valida cuando es un mutante
+	 */
 	@Test
-	public void testIsMutantOk() {
-		
+	public void testIsMutant_whenOk() {
 		when(service.isMutant(any(HumanDTO.class))).thenReturn(true);
 		
 		ResponseEntity<Void> responseController = controller.isMutant(getHumanDTO());
@@ -59,9 +58,11 @@ public class MutantControllerTest {
 		assertEquals(HttpStatus.OK, responseController.getStatusCode());
 	}
 	
+	/**
+	 * Valida cuando no es un mutante
+	 */
 	@Test
-	public void testIsMutantForbidden() {
-		
+	public void testIsMutant_whenForbidden() {
 		when(service.isMutant(any(HumanDTO.class))).thenReturn(false);
 		
 		ResponseEntity<Void> responseController = controller.isMutant(getHumanDTO());
@@ -69,15 +70,40 @@ public class MutantControllerTest {
 		assertEquals(HttpStatus.FORBIDDEN, responseController.getStatusCode());
 	}
 	
+	/**
+	 * Valida cuando el dna es null
+	 */
 	@Test
-	public void testIsMutantBadRequest() {
+	public void testIsMutant_whenBadRequest_dnaNull() {
+		HumanDTO human = getHumanDTO();
+		human.setDna(null);
+		ResponseEntity<Void> responseController = controller.isMutant(human);
 		
-		RuntimeException exception = new IllegalArgumentException("");
-		doThrow(exception).when(service).isMutant(eq(null));
-		
+		assertEquals(HttpStatus.BAD_REQUEST, responseController.getStatusCode());
+	}
+	
+	/**
+	 * Valida cuando el request es null
+	 */
+	@Test
+	public void testIsMutant_whenBadRequest_bodyNull() {
 		ResponseEntity<Void> responseController = controller.isMutant(null);
 		
 		assertEquals(HttpStatus.BAD_REQUEST, responseController.getStatusCode());
+	}
+	
+	/**
+	 * Valida cuando hay demasiadas solicitudes al servicio
+	 */
+	@Test
+	public void testIsMutant_whenTooManyRequest() {
+		when(service.isMutant(any(HumanDTO.class))).thenReturn(false);
+		
+		ResponseEntity<Void> responseController = controller.isMutant(getHumanDTO());
+		responseController = controller.isMutant(getHumanDTO());
+		responseController = controller.isMutant(getHumanDTO());
+		
+		assertEquals(HttpStatus.TOO_MANY_REQUESTS, responseController.getStatusCode());
 	}
 	
 	/**

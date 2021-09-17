@@ -28,8 +28,7 @@ import com.mercadolibre.challenge.util.PatternUtil;
 @Service
 public class HumanService implements IHumanService {
 	
-	
-	private static final int CANT_PROJECTION = 3;
+	private static final int PROJECTIONS = 3;
 	private static final int MIN_REPEATED_MUTANT = 2;
 	
 	/**
@@ -109,12 +108,12 @@ public class HumanService implements IHumanService {
 		int row = input.size();
 		Character[][] matrix = new Character[row][col];
 		if (col != row) {
-			throw new IllegalArgumentException("No tiene las medidas");
+			throw new IllegalArgumentException(ApiConstant.WRONG_SEQUENCE_DNA);
 		}
 
 		for (int i = 0; i < row; i++) {
-			if ( input.get(0).length() != col) {
-				throw new IllegalArgumentException("No tiene las medidas");
+			if ( input.get(i).length() != col) {
+				throw new IllegalArgumentException(ApiConstant.WRONG_SEQUENCE_DNA);
 			}
 			char[] letter =  input.get(i).toCharArray();
 			for (int j = 0; j < col; j++) {
@@ -135,7 +134,7 @@ public class HumanService implements IHumanService {
 	private boolean validateADNMutant(Character[][] matrix, int projectionNumber, long countADNRepeated) {
 		if (countADNRepeated >= MIN_REPEATED_MUTANT) {
 			return true;
-		} else if (projectionNumber > CANT_PROJECTION) {
+		} else if (projectionNumber > PROJECTIONS) {
 			return false;
 		} else {
 			List<String> myData = getData(matrix, projectionNumber);

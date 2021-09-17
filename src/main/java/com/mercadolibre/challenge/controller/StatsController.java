@@ -2,6 +2,7 @@ package com.mercadolibre.challenge.controller;
 
 import java.time.Duration;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -33,6 +34,11 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping("/stats")
 public class StatsController {
 
+	Logger logger = Logger.getLogger(StatsController.class);
+	
+	/**
+	 * Controla la cantidad de peticiones al servicio
+	 */
 	private final Bucket bucket;
 	
 	/**
@@ -59,6 +65,7 @@ public class StatsController {
 	@GetMapping
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Estadistica del servicio de deteccion de Mutantes") })
 	public @ResponseBody ResponseEntity<StatsDTO> stats() {
+		logger.info("Genera las estadisticas del servicio de deteccion de mutantes");
 		if (bucket.tryConsume(1)) {
 			return new ResponseEntity<>(service.stats(), HttpStatus.OK);
 		}else {
