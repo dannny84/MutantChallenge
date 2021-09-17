@@ -49,6 +49,11 @@ public class MutantController {
 	@Autowired
 	private IHumanService service;
 	
+	/**
+	 * Constructor
+	 * @param tokensAllowed
+	 * @param tokensDuration
+	 */
 	@Autowired
 	public MutantController(@Value("${security.tokens.max}") int tokensAllowed, @Value("${security.tokens.duration}") int tokensDuration) {
         Bandwidth limit = Bandwidth.classic(tokensAllowed, Refill.greedy(tokensAllowed, Duration.ofSeconds(tokensDuration)));
