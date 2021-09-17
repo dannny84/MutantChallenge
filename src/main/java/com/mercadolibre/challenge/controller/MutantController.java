@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mercadolibre.challenge.domain.HumanDTO;
 import com.mercadolibre.challenge.service.IHumanService;
+import com.mercadolibre.challenge.util.ApiConstant;
+import com.mercadolibre.challenge.util.PatternUtil;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -49,14 +51,20 @@ public class MutantController {
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "OK"),
 							@ApiResponse(code = 403, message = "Forbidden") })
 	public @ResponseBody ResponseEntity<Void> isMutant(@ApiParam(value="Este es el adn") @RequestBody(required = true) HumanDTO humanDTO) {
-		boolean response = false;
-		try {
-		logger.info("Detecta si un humano es mutante segun la secuencia de ADN");
+		ResponseEntity<Void> response;
 		
-		response = service.isMutant(humanDTO);
+		try {
+			logger.info("Detecta si un humano es mutante segun la secuencia de ADN");
+			if(PatternUtil.validatePattern(humanDTO.getDna(), ApiConstant.ADN_PATTERN_PERSON)) {
+				response = service.isMutant(humanDTO) ? 
+						new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			}else {
+				response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			}
 		}catch(IllegalArgumentException e) {
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			response =  new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
-		return response ? new ResponseEntity<>(HttpStatus.OK) : new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		
+		return response;
 	}
 }

@@ -32,13 +32,18 @@ public class StatsService implements IStatsService{
 	@Override
 	public StatsDTO stats() {
 		
-		long totalHumans = humanService.count();
-		long totalMutants = humanService.countByIsMutant(true);
+		Long totalHumans = humanService.count();
+		Long totalMutants = humanService.countByIsMutant(true);
 		
 		StatsDTO stats = new StatsDTO();
 		stats.setCountHumanDna(totalHumans);
 		stats.setCountMutantDna(totalMutants);
-		stats.setRatio(totalHumans > 0 ? totalMutants/totalHumans : 0);
+		
+		if(totalHumans > 0) {
+			stats.setRatio(totalMutants.doubleValue()/totalHumans.doubleValue());
+		}else {
+			stats.setRatio(0);
+		}
 		
 		return stats;
 	}
